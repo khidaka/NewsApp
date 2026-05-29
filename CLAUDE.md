@@ -1,5 +1,6 @@
 <!-- SPECKIT START -->
-進行中フィーチャーのプランは specs/007-smart-source-suggestions/plan.md（ブランチ: 007-smart-source-suggestions）。
+最新フィーチャーのプランは specs/007-smart-source-suggestions/plan.md（main にマージ済み）。
+次のフィーチャー開始時は /speckit-specify で新しいプランが生成される。
 <!-- SPECKIT END -->
 
 ## プロジェクト概要
