@@ -38,6 +38,15 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(sources.first?.name, url)
     }
 
+    func testAddSourceStillWorksWithCustomURL() throws {
+        let customURL = "https://custom-blog.example.com/feed.rss"
+        XCTAssertFalse(SuggestedSources.all.map(\.feedURL).contains(customURL), "Test URL must not be in suggested catalog")
+        try viewModel.addSource(name: "Custom Blog", feedURL: customURL, context: context)
+        let sources = try context.fetch(FetchDescriptor<NewsSource>())
+        XCTAssertEqual(sources.count, 1)
+        XCTAssertEqual(sources.first?.feedURL, customURL)
+    }
+
     func testDeleteSource_removesFromStore() throws {
         try viewModel.addSource(name: "Test", feedURL: "https://example.com/feed", context: context)
         let sources = try context.fetch(FetchDescriptor<NewsSource>())

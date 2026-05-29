@@ -102,7 +102,7 @@ final class FeedViewModelSkipTests: XCTestCase {
 final class MockPersonalizationService: PersonalizationServiceProtocol {
     var recordSignalCalled = false
     func score(articles: [Article], signals: [InterestSignal], obsidianContext: ObsidianContext?) -> [Article] { articles }
-    func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async {
+    @MainActor func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async {
         recordSignalCalled = true
     }
 }
