@@ -1,6 +1,5 @@
 <!-- SPECKIT START -->
-最新フィーチャーのプランは specs/006-skip-persist/plan.md（main にマージ済み）。
-次のフィーチャー開始時は /speckit-specify で新しいプランが生成される。
+進行中フィーチャーのプランは specs/007-smart-source-suggestions/plan.md（ブランチ: 007-smart-source-suggestions）。
 <!-- SPECKIT END -->
 
 ## プロジェクト概要
@@ -26,6 +25,7 @@
 | `004-app-icon` | アプリアイコン（黒背景＋3本白角丸線） | `Assets.xcassets/AppIcon.appiconset/` |
 | `005-news-source-suggestions` | ソース追加シート上部に静的おすすめリスト（7件）・ワンタップ追加・重複防止・シート継続表示 | `NewsApp/Models/SuggestedSource.swift`（新規）・`SourceListView.swift` |
 | `006-skip-persist` | スキップ記事を SwiftData で永続化（再起動後も非表示）・V1→V2 lightweight マイグレーション | `Article.swift`・`FeedViewModel.swift`・`FeedView.swift`・`NewsAppMigration.swift`（新規） |
+| `007-smart-source-suggestions` | おすすめソースを利用統計（InterestSignal のキーワード重み）で自動並び替え | `SuggestedSource.swift`・`SourceListView.swift` |
 
 全ブランチは `main` にマージ済み。GitHub: https://github.com/khidaka/NewsApp
 
@@ -40,7 +40,7 @@
 
 ## テスト状況（2026-05-29）
 
-44テスト全合格（Unit 41件 + Integration 3件）。
+51テスト全合格（Unit 48件 + Integration 3件）。
 実機: iPhone Air / iOS 26.5。
 
 ## 次のフィーチャー追加方法
