@@ -1,7 +1,6 @@
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-at specs/003-swipe-action-hint/plan.md
+最新フィーチャーのプランは specs/005-news-source-suggestions/plan.md（main にマージ済み）。
+次のフィーチャー開始時は /speckit-specify で新しいプランが生成される。
 <!-- SPECKIT END -->
 
 ## プロジェクト概要
@@ -25,6 +24,7 @@ at specs/003-swipe-action-hint/plan.md
 | `002-skip-action` | スキップ操作（セッション限定・SwiftData 書き込みなし） | `FeedViewModel.swift`・`CardView.swift`・`FeedView.swift` |
 | `003-swipe-action-hint` | スワイプ中アクションヒントバッジ（右=緑・左=赤・上=グレー、距離連動不透明度） | `CardView.swift` のみ |
 | `004-app-icon` | アプリアイコン（黒背景＋3本白角丸線） | `Assets.xcassets/AppIcon.appiconset/` |
+| `005-news-source-suggestions` | ソース追加シート上部に静的おすすめリスト（7件）・ワンタップ追加・重複防止・シート継続表示 | `NewsApp/Models/SuggestedSource.swift`（新規）・`SourceListView.swift` |
 
 全ブランチは `main` にマージ済み。GitHub: https://github.com/khidaka/NewsApp
 
@@ -35,10 +35,12 @@ at specs/003-swipe-action-hint/plan.md
 - **パーソナライズ**: `shared:+2`・`notInterested:-3`・`Obsidian:+1` の加重スコアリング
 - **Obsidian Vault**: 起動時のみスキャン、security-scoped URL bookmark で iCloud Drive アクセス
 - **BGTaskScheduler**: `com.newsapp.refresh`（1時間ごと）
+- **スレッド安全**: `PersonalizationService.recordSignal` は `@MainActor` 必須。`ModelContext` をオフメインスレッドで操作すると SwiftData がクラッシュする（iOS 17+）。
 
 ## テスト状況（2026-05-29）
 
-28テスト全合格（Unit 25件 + Integration 3件）。
+36テスト全合格（Unit 33件 + Integration 3件）。
+実機: iPhone Air / iOS 26.5。
 
 ## 次のフィーチャー追加方法
 
