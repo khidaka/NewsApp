@@ -2,12 +2,29 @@ import Foundation
 import SwiftData
 import Combine
 
+// MARK: - LastAction
+
+enum LastAction {
+    case swiped(article: Article, kind: SwipeAction)
+    case skipped(article: Article)
+
+    var article: Article {
+        switch self {
+        case .swiped(let a, _): a
+        case .skipped(let a): a
+        }
+    }
+}
+
+// MARK: - FeedViewModel
+
 @MainActor
 final class FeedViewModel: ObservableObject {
 
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
-    @Published var lastSwipedArticle: Article? = nil
+    @Published var lastAction: LastAction? = nil
+    @Published var skippedURLsInSession: Set<String> = []
 
     private let collector: NewsCollectorServiceProtocol
     private let personalization: PersonalizationServiceProtocol
@@ -34,24 +51,35 @@ final class FeedViewModel: ObservableObject {
     }
 
     func swipeRight(article: Article, context: ModelContext) async {
-        lastSwipedArticle = article
+        lastAction = .swiped(article: article, kind: .shared)
         article.swipeAction = .shared
         try? context.save()
         await personalization.recordSignal(for: article, action: .shared, context: context)
     }
 
     func swipeLeft(article: Article, context: ModelContext) async {
-        lastSwipedArticle = article
+        lastAction = .swiped(article: article, kind: .notInterested)
         article.swipeAction = .notInterested
         try? context.save()
         await personalization.recordSignal(for: article, action: .notInterested, context: context)
     }
 
+    func skip(article: Article) {
+        skippedURLsInSession.insert(article.url)
+        lastAction = .skipped(article: article)
+        // SwiftData 書き込みなし、PersonalizationService 呼び出しなし
+    }
+
     func undo(context: ModelContext) {
-        guard let article = lastSwipedArticle else { return }
-        article.swipeAction = nil
-        article.score = 0
-        try? context.save()
-        lastSwipedArticle = nil
+        guard let action = lastAction else { return }
+        switch action {
+        case .swiped(let article, _):
+            article.swipeAction = nil
+            article.score = 0
+            try? context.save()
+        case .skipped(let article):
+            skippedURLsInSession.remove(article.url)
+        }
+        lastAction = nil
     }
 }

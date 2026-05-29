@@ -15,10 +15,15 @@ struct FeedView: View {
     @StateObject private var viewModel = FeedViewModel()
     @State private var shareItem: Article? = nil
 
+    // スキップ済みを除外した表示用リスト
+    private var visibleArticles: [Article] {
+        articles.filter { !viewModel.skippedURLsInSession.contains($0.url) }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
-                if articles.isEmpty && !viewModel.isLoading {
+                if visibleArticles.isEmpty && !viewModel.isLoading {
                     emptyState
                 } else {
                     cardStack
@@ -42,14 +47,14 @@ struct FeedView: View {
                     .disabled(viewModel.isLoading)
                 }
 
-                if viewModel.lastSwipedArticle != nil {
+                if viewModel.lastAction != nil {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
                             viewModel.undo(context: context)
                         } label: {
                             Label("取り消し", systemImage: "arrow.uturn.backward")
                         }
-                        .accessibilityLabel("直前のスワイプを取り消す")
+                        .accessibilityLabel("直前の操作を取り消す")
                     }
                 }
             }
@@ -70,14 +75,20 @@ struct FeedView: View {
 
     private var cardStack: some View {
         ZStack {
-            ForEach(articles.prefix(3).reversed()) { article in
-                CardView(article: article) {
-                    // 右スワイプ
-                    shareItem = article
-                    Task { await viewModel.swipeRight(article: article, context: context) }
-                } onSwipeLeft: {
-                    Task { await viewModel.swipeLeft(article: article, context: context) }
-                }
+            ForEach(visibleArticles.prefix(3).reversed()) { article in
+                CardView(
+                    article: article,
+                    onSwipeRight: {
+                        shareItem = article
+                        Task { await viewModel.swipeRight(article: article, context: context) }
+                    },
+                    onSwipeLeft: {
+                        Task { await viewModel.swipeLeft(article: article, context: context) }
+                    },
+                    onSkip: {
+                        viewModel.skip(article: article)
+                    }
+                )
                 .padding(.horizontal)
             }
         }
