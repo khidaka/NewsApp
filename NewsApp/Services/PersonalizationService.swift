@@ -4,7 +4,7 @@ import SwiftData
 
 protocol PersonalizationServiceProtocol {
     func score(articles: [Article], signals: [InterestSignal], obsidianContext: ObsidianContext?) -> [Article]
-    func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async
+    @MainActor func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async
 }
 
 // MARK: - Stub (replaced by full implementation in US3 phase)
@@ -13,7 +13,7 @@ final class PersonalizationServiceStub: PersonalizationServiceProtocol {
     func score(articles: [Article], signals: [InterestSignal], obsidianContext: ObsidianContext?) -> [Article] {
         articles
     }
-    func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async {}
+    @MainActor func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async {}
 }
 
 // MARK: - Full Implementation
@@ -35,6 +35,7 @@ final class PersonalizationService: PersonalizationServiceProtocol {
         }
     }
 
+    @MainActor
     func recordSignal(for article: Article, action: SwipeAction, context: ModelContext) async {
         let text = article.title + " " + article.summary
         let keywords = extractKeywords(from: text)

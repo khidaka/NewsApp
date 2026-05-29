@@ -11,6 +11,10 @@ struct SourceListView: View {
     @State private var newURL = ""
     @State private var newName = ""
 
+    private var filteredSuggestions: [SuggestedSource] {
+        SuggestedSources.filtered(excluding: Set(sources.map(\.feedURL)))
+    }
+
     var body: some View {
         List {
             ForEach(sources) { source in
@@ -49,6 +53,17 @@ struct SourceListView: View {
     private var addSourceSheet: some View {
         NavigationStack {
             Form {
+                if !filteredSuggestions.isEmpty {
+                    Section("おすすめ") {
+                        ForEach(filteredSuggestions, id: \.feedURL) { suggestion in
+                            Button(suggestion.name) {
+                                try? viewModel.addSource(name: suggestion.name, feedURL: suggestion.feedURL, context: context)
+                            }
+                            .foregroundStyle(.primary)
+                            .accessibilityLabel("\(suggestion.name)をおすすめソースとして追加")
+                        }
+                    }
+                }
                 Section("フィード URL") {
                     TextField("https://example.com/feed.xml", text: $newURL)
                         .keyboardType(.URL)
