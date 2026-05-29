@@ -27,25 +27,41 @@ final class FeedViewModelSkipTests: XCTestCase {
 
     func testSkip_doesNotSetSwipeAction() {
         let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
         XCTAssertNil(article.swipeAction, "スキップは swipeAction を変更しない")
     }
 
-    func testSkip_addsURLToSession() {
-        let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
-        XCTAssertTrue(viewModel.skippedURLsInSession.contains(article.url), "スキップ後はセッション除外セットに URL が追加される")
+    func testSkip_setsIsSkippedTrue() {
+        let article = makeArticle(url: "https://example.com/persist")
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
+        XCTAssertTrue(article.isSkipped, "スキップ後は isSkipped が true になる")
+    }
+
+    func testSkip_savesToContext() throws {
+        let article = makeArticle(url: "https://example.com/persist2")
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
+
+        let descriptor = FetchDescriptor<Article>(
+            predicate: #Predicate { $0.url == "https://example.com/persist2" }
+        )
+        let fetched = try context.fetch(descriptor)
+        XCTAssertEqual(fetched.first?.isSkipped, true, "SwiftData に isSkipped=true が保存されている")
     }
 
     func testSkip_doesNotCallPersonalizationService() {
         let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
         XCTAssertFalse(mockPersonalization.recordSignalCalled, "スキップは PersonalizationService を呼ばない")
     }
 
     func testSkip_setsLastActionToSkipped() {
         let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
         guard case .skipped(let a) = viewModel.lastAction else {
             return XCTFail("lastAction は .skipped になるべき")
         }
@@ -54,30 +70,46 @@ final class FeedViewModelSkipTests: XCTestCase {
 
     // MARK: - undo() tests
 
-    func testUndo_afterSkip_removesFromSession() {
+    func testUndo_afterSkip_setsIsSkippedFalse() {
         let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
-        XCTAssertTrue(viewModel.skippedURLsInSession.contains(article.url))
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
+        XCTAssertTrue(article.isSkipped)
 
         viewModel.undo(context: context)
-        XCTAssertFalse(viewModel.skippedURLsInSession.contains(article.url), "Undo でセッション除外が解除される")
+        XCTAssertFalse(article.isSkipped, "Undo で isSkipped が false に戻る")
+    }
+
+    func testUndo_afterSkip_savesToContext() throws {
+        let article = makeArticle(url: "https://example.com/undo-persist")
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
+        viewModel.undo(context: context)
+
+        let descriptor = FetchDescriptor<Article>(
+            predicate: #Predicate { $0.url == "https://example.com/undo-persist" }
+        )
+        let fetched = try context.fetch(descriptor)
+        XCTAssertEqual(fetched.first?.isSkipped, false, "Undo 後は SwiftData に isSkipped=false が保存されている")
     }
 
     func testUndo_afterSkip_clearsLastAction() {
         let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
         viewModel.undo(context: context)
         XCTAssertNil(viewModel.lastAction, "Undo 後は lastAction が nil になる")
     }
 
     func testUndo_afterSkip_doesNotModifySwipeAction() {
         let article = makeArticle(url: "https://example.com/1")
-        viewModel.skip(article: article)
+        context.insert(article)
+        viewModel.skip(article: article, context: context)
         viewModel.undo(context: context)
         XCTAssertNil(article.swipeAction, "Undo 後も swipeAction は nil のまま")
     }
 
-    // MARK: - swipe tests (lastAction migration)
+    // MARK: - swipe tests
 
     func testSwipeRight_setsLastActionToSwiped() async {
         let article = makeArticle(url: "https://example.com/1")

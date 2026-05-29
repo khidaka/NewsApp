@@ -6,7 +6,7 @@ struct FeedView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.obsidianContext) private var obsidianContext
     @Query(
-        filter: #Predicate<Article> { $0.swipeActionRaw == nil },
+        filter: #Predicate<Article> { $0.swipeActionRaw == nil && !$0.isSkipped },
         sort: \Article.score,
         order: .reverse
     )
@@ -15,15 +15,10 @@ struct FeedView: View {
     @StateObject private var viewModel = FeedViewModel()
     @State private var shareItem: Article? = nil
 
-    // スキップ済みを除外した表示用リスト
-    private var visibleArticles: [Article] {
-        articles.filter { !viewModel.skippedURLsInSession.contains($0.url) }
-    }
-
     var body: some View {
         NavigationStack {
             ZStack {
-                if visibleArticles.isEmpty && !viewModel.isLoading {
+                if articles.isEmpty && !viewModel.isLoading {
                     emptyState
                 } else {
                     cardStack
@@ -75,7 +70,7 @@ struct FeedView: View {
 
     private var cardStack: some View {
         ZStack {
-            ForEach(visibleArticles.prefix(3).reversed()) { article in
+            ForEach(articles.prefix(3).reversed()) { article in
                 CardView(
                     article: article,
                     onSwipeRight: {
@@ -86,7 +81,7 @@ struct FeedView: View {
                         Task { await viewModel.swipeLeft(article: article, context: context) }
                     },
                     onSkip: {
-                        viewModel.skip(article: article)
+                        viewModel.skip(article: article, context: context)
                     }
                 )
                 .padding(.horizontal)

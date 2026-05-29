@@ -17,6 +17,7 @@ final class Article {
     var fetchedAt: Date
     var swipeActionRaw: String?
     var score: Double
+    var isSkipped: Bool = false
 
     var swipeAction: SwipeAction? {
         get { swipeActionRaw.flatMap { SwipeAction(rawValue: $0) } }
@@ -31,7 +32,8 @@ final class Article {
         sourceURL: String,
         fetchedAt: Date = .now,
         swipeAction: SwipeAction? = nil,
-        score: Double = 0.0
+        score: Double = 0.0,
+        isSkipped: Bool = false
     ) {
         self.id = UUID()
         self.url = url
@@ -42,5 +44,6 @@ final class Article {
         self.fetchedAt = fetchedAt
         self.swipeActionRaw = swipeAction?.rawValue
         self.score = score
+        self.isSkipped = isSkipped
     }
 }

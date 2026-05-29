@@ -10,7 +10,10 @@ struct NewsAppApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: Article.self, NewsSource.self, InterestSignal.self)
+            container = try ModelContainer(
+                for: Article.self, NewsSource.self, InterestSignal.self,
+                migrationPlan: NewsAppMigrationPlan.self
+            )
         } catch {
             fatalError("SwiftData container の初期化に失敗しました: \(error)")
         }

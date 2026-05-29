@@ -24,7 +24,6 @@ final class FeedViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String? = nil
     @Published var lastAction: LastAction? = nil
-    @Published var skippedURLsInSession: Set<String> = []
 
     private let collector: NewsCollectorServiceProtocol
     private let personalization: PersonalizationServiceProtocol
@@ -64,10 +63,10 @@ final class FeedViewModel: ObservableObject {
         await personalization.recordSignal(for: article, action: .notInterested, context: context)
     }
 
-    func skip(article: Article) {
-        skippedURLsInSession.insert(article.url)
+    func skip(article: Article, context: ModelContext) {
+        article.isSkipped = true
         lastAction = .skipped(article: article)
-        // SwiftData 書き込みなし、PersonalizationService 呼び出しなし
+        try? context.save()
     }
 
     func undo(context: ModelContext) {
@@ -78,7 +77,8 @@ final class FeedViewModel: ObservableObject {
             article.score = 0
             try? context.save()
         case .skipped(let article):
-            skippedURLsInSession.remove(article.url)
+            article.isSkipped = false
+            try? context.save()
         }
         lastAction = nil
     }
