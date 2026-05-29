@@ -1,6 +1,5 @@
 <!-- SPECKIT START -->
-最新フィーチャーのプランは specs/005-news-source-suggestions/plan.md（main にマージ済み）。
-次のフィーチャー開始時は /speckit-specify で新しいプランが生成される。
+進行中フィーチャーのプランは specs/006-skip-persist/plan.md（ブランチ: 006-skip-persist）。
 <!-- SPECKIT END -->
 
 ## プロジェクト概要
@@ -30,7 +29,7 @@
 
 ## 重要な設計メモ
 
-- **スキップ**: `FeedViewModel.skippedURLsInSession: Set<String>` はインメモリのみ（再起動でリセット）
+- **スキップ**: `Article.isSkipped: Bool` で SwiftData に永続化（再起動後も非表示を維持）。`FeedView` の `@Query` フィルタ（`!$0.isSkipped`）で除外。
 - **Undo**: `LastAction` enum（`.swiped` / `.skipped`）で型安全に管理
 - **パーソナライズ**: `shared:+2`・`notInterested:-3`・`Obsidian:+1` の加重スコアリング
 - **Obsidian Vault**: 起動時のみスキャン、security-scoped URL bookmark で iCloud Drive アクセス
