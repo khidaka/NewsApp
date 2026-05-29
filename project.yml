@@ -1,0 +1,48 @@
+name: NewsApp
+options:
+  bundleIdPrefix: com.newsapp
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  FeedKit:
+    url: https://github.com/nmdias/FeedKit
+    from: 9.1.2
+
+targets:
+  NewsApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: NewsApp
+    resources:
+      - path: NewsApp/Resources
+    info:
+      path: NewsApp/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: NewsApp
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.newsapp.refresh
+        NSDocumentsFolderUsageDescription: "Obsidian Vaultのノートを読み取り、ニュースのパーソナライズに使用します"
+    dependencies:
+      - package: FeedKit
+    settings:
+      SWIFT_VERSION: "5.9"
+      IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+
+  NewsAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: NewsAppTests
+    dependencies:
+      - target: NewsApp
+    settings:
+      SWIFT_VERSION: "5.9"
+      IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+      GENERATE_INFOPLIST_FILE: YES
