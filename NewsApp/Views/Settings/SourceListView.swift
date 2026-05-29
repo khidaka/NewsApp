@@ -5,14 +5,15 @@ struct SourceListView: View {
 
     @Environment(\.modelContext) private var context
     @Query(sort: \NewsSource.addedAt) private var sources: [NewsSource]
+    @Query private var signals: [InterestSignal]
     @StateObject private var viewModel = SettingsViewModel()
 
     @State private var showAddSheet = false
     @State private var newURL = ""
     @State private var newName = ""
 
-    private var filteredSuggestions: [SuggestedSource] {
-        SuggestedSources.filtered(excluding: Set(sources.map(\.feedURL)))
+    private var rankedSuggestions: [SuggestedSource] {
+        SuggestedSources.ranked(excluding: Set(sources.map(\.feedURL)), signals: signals)
     }
 
     var body: some View {
@@ -53,9 +54,9 @@ struct SourceListView: View {
     private var addSourceSheet: some View {
         NavigationStack {
             Form {
-                if !filteredSuggestions.isEmpty {
+                if !rankedSuggestions.isEmpty {
                     Section("おすすめ") {
-                        ForEach(filteredSuggestions, id: \.feedURL) { suggestion in
+                        ForEach(rankedSuggestions, id: \.feedURL) { suggestion in
                             Button(suggestion.name) {
                                 try? viewModel.addSource(name: suggestion.name, feedURL: suggestion.feedURL, context: context)
                             }
